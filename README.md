@@ -1,6 +1,3 @@
-Sure, here's the updated README section that you can directly copy and paste:
-
----
 
 # Upload_DICOM_to_PACS
 

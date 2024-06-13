@@ -1,4 +1,4 @@
-Upload_DICOM_to_PACS
+#Upload_DICOM_to_PACS
 This project facilitates uploading DICOM series to a PACS server (Orthanc) via an API. Below are the steps and details for setting up and using the project.
 
 Setup Instructions

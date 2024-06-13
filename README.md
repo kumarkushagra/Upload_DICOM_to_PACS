@@ -1,5 +1,5 @@
 
-# Upload_DICOM_to_PACS
+# Upload DICOM to PACS
 
 This project facilitates uploading DICOM series to a PACS server (Orthanc) via an API. Below are the steps and details for setting up and using the project.
 
@@ -12,16 +12,20 @@ This project facilitates uploading DICOM series to a PACS server (Orthanc) via a
 ## File Description
 
 - **main.py**: This file contains the main script that hosts an API using Uvicorn.
-  
+
 ## Functionality Overview
 
 The `main.py` script performs the following tasks:
 
 1. **Uploading DICOM Series**: Given a directory path (`dir_path`), the script uploads "unuploaded" and "Normal" DICOM series corresponding to unique UHIDs (Unique Hospital Identifier).
-   
+
 2. **Anonymization**: After uploading, all uploaded studies are anonymized.
 
 3. **CSV File Update**: Updates a CSV file (`Final.csv`) with the status of uploaded DICOM series for each UHID.
+
+4. **Deletion of Studies**: Includes a function to delete all studies stored in the PACS server. This can be modified to delete specific studies given the StudyID.
+
+5. **Anonymized Copy**: Every time the code is executed, it creates an anonymized copy of all studies present in the PACS.
 
 ## Function Explanation
 
@@ -56,7 +60,7 @@ async def upload_Zip(dir_path: str):
 #### Explanation:
 
 - **`upload_Zip(dir_path: str)`**: This function is an asynchronous HTTP GET endpoint (`@app.get`) that accepts a `dir_path` parameter representing the directory path containing DICOM series to upload.
-  
+
 - **`get_ID(path, ...)`**: Retrieves an array of UHIDs from `Final.csv` where the DICOM series should be uploaded.
 
 - **`return_all_series_dirs(dir_path, uhid)`**: Returns paths to directories containing DICOM series for a specific UHID.
@@ -67,8 +71,45 @@ async def upload_Zip(dir_path: str):
 
 - **`anonymize_all_studies(ORTHANC_URL)`**: Anonymizes all uploaded studies on the Orthanc server after uploading.
 
-### Usage
+### Additional Functions
 
-To use this functionality, hit the endpoint `/up/{dir_path}` in your browser or via an API client with `dir_path` replaced by the directory path containing DICOM series to be uploaded.
+#### Delete All Studies
 
----
+There is a function available to delete all studies stored in the PACS server:
+
+```python
+import requests
+
+# Base URL for the Orthanc instance
+ORTHANC_URL = 'http://localhost:8042'
+
+def delete_all_studies():
+    # Endpoint to retrieve all studies
+    studies_url = f'{ORTHANC_URL}/studies'
+    
+    try:
+        # Get all studies
+        response = requests.get(studies_url)
+        response.raise_for_status()
+        study_ids = response.json()
+        
+        # Delete each study
+        for study_id in study_ids:
+            study_delete_url = f'{ORTHANC_URL}/studies/{study_id}'
+            delete_response = requests.delete(study_delete_url)
+            delete_response.raise_for_status()
+            print(f'Successfully deleted study: {study_id}')
+    
+    except requests.exceptions.RequestException as e:
+        print(f'An error occurred: {e}')
+
+if __name__ == '__main__':
+    delete_all_studies()
+
+```
+
+This function can be modified to delete specific studies given the StudyID.
+
+#### Anonymized Copy
+
+Every time this code is executed, it automatically creates an anonymized copy of all studies present in the PACS server.
